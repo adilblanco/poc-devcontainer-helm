@@ -1,0 +1,22 @@
+{
+  "name": "Airflow on Kind",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false
+    }
+  },
+
+  "forwardPorts": [8080],
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+
+  "postCreateCommand": "bash .devcontainer/hooks/post-create.sh",
+  "postStartCommand": "bash .devcontainer/hooks/post-start.sh",
+
+  "remoteUser": "root"
+}

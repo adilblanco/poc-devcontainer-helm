@@ -1,0 +1,36 @@
+# Airflow Helm chart values — local Minikube development
+# Chart: apache-airflow/airflow
+
+airflowVersion: "2.11.0"
+
+defaultAirflowRepository: apache/airflow
+defaultAirflowTag: "2.11.0"
+
+executor: LocalExecutor
+
+# Webserver secret created in post-create.sh
+webserverSecretKeySecretName: airflow-webserver-config
+
+webserver:
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: admin
+    email: admin@admin.com
+    firstName: Admin
+    lastName: User
+    password: admin
+
+# Bundled PostgreSQL — sufficient for local dev
+postgresql:
+  enabled: true
+
+dags:
+  gitSync:
+    enabled: false
+
+config:
+  core:
+    load_examples: "False"
+  api:
+    auth_backends: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
