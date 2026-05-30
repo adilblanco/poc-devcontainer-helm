@@ -11,6 +11,16 @@ executor: LocalExecutor
 # Webserver secret created in post-create.sh
 webserverSecretKeySecretName: airflow-webserver-config
 
+# Expose the webserver via NodePort so Kind can route host:8080 → node:30080.
+webserver:
+  service:
+    type: NodePort
+    ports:
+      - name: airflow-ui
+        port: 8080
+        targetPort: 8080
+        nodePort: 31080
+
 # Replaces deprecated 'webserver.defaultUser'
 createUserJob:
   defaultUser:

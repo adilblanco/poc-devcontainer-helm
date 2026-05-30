@@ -1,0 +1,10 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # Maps port 8080 on the DevContainer to port 30080 on the Kind node.
+      # Airflow webserver service uses NodePort 30080.
+      - containerPort: 31080
+        hostPort: 8080
+        protocol: TCP

@@ -33,20 +33,5 @@ echo "    Cluster is fully ready."
 # =============================================================================
 # Section 2 — Airflow
 # =============================================================================
-
-# Wait for the webserver pod to be Ready before starting the port-forward.
-echo "==> Waiting for Airflow webserver..."
-kubectl wait pod \
-  --for=condition=Ready \
-  --selector=component=webserver \
-  --namespace airflow \
-  --timeout=300s
-
-# Forward the Airflow webserver to localhost:8080.
-# 'setsid' creates a new session fully detached from the shell — survives when postStartCommand exits.
-pkill -f "kubectl port-forward.*airflow-webserver" 2>/dev/null || true
-setsid kubectl port-forward svc/airflow-webserver 8080:8080 \
-  --namespace airflow \
-  --address=0.0.0.0 > /tmp/airflow-port-forward.log 2>&1 &
-
-echo "    Airflow UI: http://localhost:8080 (admin / admin)"
+# Port mapping is handled by Kind (kind-config.yaml) — no port-forward needed.
+# Airflow UI is accessible at http://localhost:8080 once pods are Running.

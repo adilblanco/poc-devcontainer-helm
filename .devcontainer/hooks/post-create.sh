@@ -46,7 +46,7 @@ fi
 # 'local' is the Kind cluster name — distinct from the 'airflow' namespace deployed inside it.
 echo "==> Creating Kind cluster..."
 kind delete cluster --name local 2>/dev/null || true
-kind create cluster --name local
+kind create cluster --name local --config "${WORKSPACE_DIR}/.devcontainer/kind-config.yaml"
 
 echo "    Cluster is ready."
 kubectl cluster-info
@@ -76,7 +76,4 @@ echo "==> Deploying Airflow via Helm..."
 helm upgrade --install airflow apache-airflow/airflow \
   --namespace airflow \
   --values "${WORKSPACE_DIR}/.devcontainer/helm/values.yaml" \
-  --timeout 10m
-
-echo ""
-echo "✓ Airflow deployed. UI: http://localhost:8080 (admin / admin)"
+  --timeout 10m && echo "✓ Airflow deployed. UI: http://localhost:8080 (admin / admin)"
