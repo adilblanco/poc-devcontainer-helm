@@ -52,5 +52,31 @@ echo "    Cluster is ready."
 kubectl cluster-info
 
 # =============================================================================
-# Section 3 — Airflow (TODO) 
+# Section 3 — Airflow
 # =============================================================================
+
+# Create the namespace where all Airflow components will be deployed.
+echo "==> Creating namespace airflow..."
+kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -
+
+# Create the webserver secret — required by Airflow to secure its web sessions.
+echo "==> Creating webserver secret..."
+kubectl create secret generic airflow-webserver-config \
+  --from-literal="webserver-secret-key=$(python3 -c 'import secrets; print(secrets.token_hex(16))')" \
+  --namespace airflow \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# Add the official Apache Airflow Helm repository.
+echo "==> Adding Apache Airflow Helm repo..."
+helm repo add apache-airflow https://airflow.apache.org 2>/dev/null || true
+helm repo update
+
+# Deploy Airflow using the Helm chart with our custom values.
+echo "==> Deploying Airflow via Helm..."
+helm upgrade --install airflow apache-airflow/airflow \
+  --namespace airflow \
+  --values "${WORKSPACE_DIR}/.devcontainer/helm/values.yaml" \
+  --timeout 10m
+
+echo ""
+echo "✓ Airflow deployed. UI: http://localhost:8080 (admin / admin)"
