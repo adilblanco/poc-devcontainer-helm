@@ -1,4 +1,4 @@
-# Airflow Helm chart values — local Minikube development
+# Airflow Helm chart values — local Kind development
 # Chart: apache-airflow/airflow
 
 airflowVersion: "2.11.0"
@@ -11,7 +11,8 @@ executor: LocalExecutor
 # Webserver secret created in post-create.sh
 webserverSecretKeySecretName: airflow-webserver-config
 
-webserver:
+# Replaces deprecated 'webserver.defaultUser'
+createUserJob:
   defaultUser:
     enabled: true
     role: Admin
