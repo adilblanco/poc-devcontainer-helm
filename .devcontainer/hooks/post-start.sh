@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# 
+#
 # post-start.sh — runs every time the DevContainer starts.
 #
 
 # =============================================================================
-# Section 1 — Kubernetes (Kind) 
+# Section 1 — Kubernetes (Kind)
 # =============================================================================
 
 # Check if the cluster exists; recreate it if not.
@@ -13,10 +13,10 @@ if kind get clusters 2>/dev/null | grep -q "local"; then
   echo "    Kind cluster 'local' found."
 else
   echo "    Cluster not found — recreating..."
-  kind create cluster --name local
+  kind create cluster --name local --config "${WORKSPACE_DIR}/.devcontainer/kind-config.yaml"
 fi
 
-# Poll until the API server responds. Exits as soon as it's ready (max 120s).
+# Poll until the API server responds.
 echo "==> Waiting for Kubernetes API..."
 until kubectl cluster-info &>/dev/null; do sleep 3; done
 
@@ -33,5 +33,3 @@ echo "    Cluster is fully ready."
 # =============================================================================
 # Section 2 — Airflow
 # =============================================================================
-# Port mapping is handled by Kind (kind-config.yaml) — no port-forward needed.
-# Airflow UI is accessible at http://localhost:8080 once pods are Running.
