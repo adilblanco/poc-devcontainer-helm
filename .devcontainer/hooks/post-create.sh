@@ -43,10 +43,10 @@ fi
 # Section 2 — Kubernetes (Kind)
 # =============================================================================
 # Delete any stale cluster and create a fresh one.
-# 'airflow' is the cluster name used throughout this project.
+# 'local' is the Kind cluster name — distinct from the 'airflow' namespace deployed inside it.
 echo "==> Creating Kind cluster..."
-kind delete cluster --name airflow 2>/dev/null || true
-kind create cluster --name airflow
+kind delete cluster --name local 2>/dev/null || true
+kind create cluster --name local
 
 echo "    Cluster is ready."
 kubectl cluster-info

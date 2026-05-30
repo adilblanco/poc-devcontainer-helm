@@ -9,11 +9,11 @@
 
 # Check if the cluster exists; recreate it if not.
 echo "==> Checking Kind cluster..."
-if kind get clusters 2>/dev/null | grep -q "airflow"; then
-  echo "    Cluster 'airflow' is running."
+if kind get clusters 2>/dev/null | grep -q "local"; then
+  echo "    Kind cluster 'local' found."
 else
   echo "    Cluster not found — recreating..."
-  kind create cluster --name airflow
+  kind create cluster --name local
 fi
 
 # Poll until the API server responds. Exits as soon as it's ready (max 120s).
