@@ -8,8 +8,6 @@
 # Airflow versions.
 
 airflow:
-  defaultAirflowRepository: bi-airflow-custom-img
-
   # Never pull from registry — use the image loaded locally via 'kind load docker-image'.
   images:
     airflow:
