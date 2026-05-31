@@ -3,6 +3,8 @@
 # post-start.sh — runs every time the DevContainer starts.
 #
 
+WORKSPACE_DIR=$(pwd)
+
 # =============================================================================
 # Section 1 — Kubernetes (Kind)
 # =============================================================================

@@ -6,6 +6,7 @@
 WORKSPACE_DIR=$(pwd)
 ARCH="arm64"
 HELM_VERSION="v4.0.5"
+CUSTOM_IMAGE="airflow-custom:1.0.0"
 
 # =============================================================================
 # Section 1 — Tools installation
@@ -56,8 +57,6 @@ kubectl cluster-info
 # =============================================================================
 # Build the custom image and load it into the Kind cluster so that Helm can
 # use pullPolicy: Never without hitting any external registry.
-
-CUSTOM_IMAGE="airflow-custom:1.0.0"
 
 echo "==> Building custom Airflow image (${CUSTOM_IMAGE})..."
 # Build context is the project root so COPY requirements.txt works.
