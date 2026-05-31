@@ -8,3 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Note: requires a Rebuild Container to pick up changes.
 COPY --chown=airflow:root dags/ /opt/airflow/dags/
 COPY --chown=airflow:root plugins/ /opt/airflow/plugins/
+
+# Makes 'from plugins.operators...' resolvable — mirrors the production setup
+# where PYTHONPATH points to the project root (gitSync uses /opt/airflow/dags/repo).
+ENV PYTHONPATH=/opt/airflow
