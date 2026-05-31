@@ -1,6 +1,4 @@
-# poc-devcontainer-helm
-
-## Chargement d'images Docker dans Kind (KubernetesPodOperator)
+## Chargement d'images Docker dans Kind
 
 Le `KubernetesPodOperator` d'Airflow lance des Pods dans le cluster Kind. Ces Pods ont besoin que leurs images soient présentes **dans containerd** (le runtime interne de Kind), et non dans le daemon Docker du devcontainer.
 
@@ -52,21 +50,4 @@ docker exec local-control-plane ctr --namespace=k8s.io images tag \
 
 ```bash
 docker exec local-control-plane ctr --namespace=k8s.io images list | grep hello-world
-```
-
-### Utilisation dans un DAG avec KubernetesPodOperator
-
-Une fois l'image chargée, configurer `image_pull_policy: Never` pour que Kubernetes utilise l'image locale sans tenter de la télécharger :
-
-```python
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-
-task = KubernetesPodOperator(
-    task_id="hello_world",
-    name="hello-world-pod",
-    namespace="airflow",
-    image="docker.io/library/hello-world:1.0",
-    image_pull_policy="Never",
-    ...
-)
 ```
