@@ -3,16 +3,21 @@
 
 airflowVersion: "2.11.0"
 
-defaultAirflowRepository: apache/airflow
-defaultAirflowTag: "2.11.0"
+defaultAirflowRepository: airflow-custom
+defaultAirflowTag: "1.0.0"
+
+# Never pull from registry — use the image loaded locally via 'kind load docker-image'.
+images:
+  airflow:
+    pullPolicy: Never
 
 executor: LocalExecutor
 
 # Webserver secret created in post-create.sh
 webserverSecretKeySecretName: airflow-webserver-config
 
-# Expose the webserver via NodePort so Kind can route host:8080 → node:30080.
 webserver:
+  # Expose via NodePort so Kind can route host:8080 → node:31080.
   service:
     type: NodePort
     ports:
@@ -20,9 +25,6 @@ webserver:
         port: 8080
         targetPort: 8080
         nodePort: 31080
-
-# Replaces deprecated 'webserver.defaultUser'
-createUserJob:
   defaultUser:
     enabled: true
     role: Admin

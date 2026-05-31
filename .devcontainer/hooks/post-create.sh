@@ -52,7 +52,28 @@ echo "    Cluster is ready."
 kubectl cluster-info
 
 # =============================================================================
-# Section 3 — Airflow
+# Section 3 — Custom Airflow image
+# =============================================================================
+# Build the custom image and load it into the Kind cluster so that Helm can
+# use pullPolicy: Never without hitting any external registry.
+
+CUSTOM_IMAGE="airflow-custom:1.0.0"
+
+echo "==> Building custom Airflow image (${CUSTOM_IMAGE})..."
+# Build context is the project root so COPY requirements.txt works.
+# DOCKER_BUILDKIT=0 disables BuildKit to avoid multi-arch manifest list issues with Kind.
+DOCKER_BUILDKIT=0 docker build \
+  -t "${CUSTOM_IMAGE}" \
+  -f "${WORKSPACE_DIR}/.devcontainer/Dockerfile" \
+  "${WORKSPACE_DIR}"
+
+echo "==> Loading image into Kind cluster..."
+kind load docker-image "${CUSTOM_IMAGE}" --name local
+
+echo "    Image ready in cluster."
+
+# =============================================================================
+# Section 4 — Airflow
 # =============================================================================
 
 # Create the namespace where all Airflow components will be deployed.
