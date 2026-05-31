@@ -5,8 +5,31 @@
 
 WORKSPACE_DIR=$(pwd)
 ARCH="arm64"
-HELM_VERSION="v4.0.5"
-CUSTOM_IMAGE="airflow-custom:1.0.0"
+
+# =============================================================================
+# Configuration — single source of truth
+# =============================================================================
+# All version pins live in config.env. Sourcing it makes AIRFLOW_VERSION,
+# AIRFLOW_CHART_VERSION, CUSTOM_IMAGE_TAG and HELM_CLI_VERSION available
+# to every command below without any hardcoded values in this script.
+# set -a auto-exports all variables defined in config.env, making them
+# visible to envsubst which reads the environment, not the local shell.
+set -a
+# shellcheck source=../.devcontainer/config.env
+source "${WORKSPACE_DIR}/.devcontainer/config.env"
+set +a
+
+CUSTOM_IMAGE="${CUSTOM_IMAGE_NAME}:${CUSTOM_IMAGE_TAG}"
+
+echo ""
+echo "============================================="
+echo "  Versions to deploy (from config.env)"
+echo "  Airflow        : ${AIRFLOW_VERSION}"
+echo "  Helm chart     : ${AIRFLOW_CHART_VERSION}"
+echo "  Helm CLI       : ${HELM_CLI_VERSION}"
+echo "  Custom image   : ${CUSTOM_IMAGE}"
+echo "============================================="
+echo ""
 
 # =============================================================================
 # Section 1 — Tools installation
@@ -26,8 +49,8 @@ fi
 
 # Install Helm — the package manager used to deploy Airflow.
 if ! command -v helm &>/dev/null; then
-  echo "==> Installing Helm ${HELM_VERSION}..."
-  curl -fsSLo /tmp/helm.tar.gz "https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz"
+  echo "==> Installing Helm ${HELM_CLI_VERSION}..."
+  curl -fsSLo /tmp/helm.tar.gz "https://get.helm.sh/helm-${HELM_CLI_VERSION}-linux-${ARCH}.tar.gz"
   tar -xzf /tmp/helm.tar.gz -C /tmp
   mv /tmp/linux-${ARCH}/helm /usr/local/bin/helm
   rm -rf /tmp/helm.tar.gz /tmp/linux-${ARCH}
@@ -61,7 +84,9 @@ kubectl cluster-info
 echo "==> Building custom Airflow image (${CUSTOM_IMAGE})..."
 # Build context is the project root so COPY requirements.txt works.
 # DOCKER_BUILDKIT=0 disables BuildKit to avoid multi-arch manifest list issues with Kind.
+# --build-arg injects AIRFLOW_VERSION into the Dockerfile ARG — no hardcoded value there.
 DOCKER_BUILDKIT=0 docker build \
+  --build-arg AIRFLOW_VERSION="${AIRFLOW_VERSION}" \
   -t "${CUSTOM_IMAGE}" \
   -f "${WORKSPACE_DIR}/.devcontainer/Dockerfile" \
   "${WORKSPACE_DIR}"
@@ -99,14 +124,25 @@ echo "==> Adding Apache Airflow Helm repo..."
 helm repo add apache-airflow https://airflow.apache.org 2>/dev/null || true
 helm repo update
 
-# Download the pinned subchart (airflow-1.21.0.tgz) into helm/charts/.
+# Generate Chart.yaml from the template by substituting AIRFLOW_VERSION and
+# AIRFLOW_CHART_VERSION sourced from config.env.
+echo "==> Generating helm/Chart.yaml from template..."
+envsubst '${AIRFLOW_VERSION} ${AIRFLOW_CHART_VERSION}' \
+  < "${WORKSPACE_DIR}/.devcontainer/helm/Chart.yaml.tpl" \
+  > "${WORKSPACE_DIR}/.devcontainer/helm/Chart.yaml"
+
+# Download the pinned subchart (airflow-X.Y.Z.tgz) into helm/charts/.
 # This is equivalent to 'npm install' — it reads Chart.yaml and writes Chart.lock.
 echo "==> Resolving Helm chart dependencies..."
 helm dependency update "${WORKSPACE_DIR}/.devcontainer/helm"
 
-# Deploy using the local wrapper chart (not directly from the remote repo).
-# values.yaml is picked up automatically from the chart directory.
+# Deploy using the local wrapper chart.
+# --set injects the version values from config.env directly into the release,
+# overriding anything that might be in values.yaml for these two keys.
 echo "==> Deploying Airflow via Helm..."
 helm upgrade --install airflow "${WORKSPACE_DIR}/.devcontainer/helm" \
   --namespace airflow \
+  --set airflow.airflowVersion="${AIRFLOW_VERSION}" \
+  --set airflow.defaultAirflowRepository="${CUSTOM_IMAGE_NAME}" \
+  --set airflow.defaultAirflowTag="${CUSTOM_IMAGE_TAG}" \
   --timeout 10m && echo "✓ Airflow deployed. UI: http://localhost:8080 (admin / admin)"

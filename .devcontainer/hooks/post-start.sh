@@ -35,3 +35,14 @@ echo "    Cluster is fully ready."
 # =============================================================================
 # Section 2 — Airflow
 # =============================================================================
+
+# Display active versions once the cluster is reachable so that helm and
+# kubectl can query the real deployed state.
+echo ""
+echo "============================================="
+echo "  Active versions"
+echo "  Helm CLI       : $(helm version --short 2>/dev/null || echo 'not installed')"
+echo "  Helm chart     : $(helm list -n airflow 2>/dev/null | awk 'NR==2{print $9}')"
+echo "  Airflow        : $(helm list -n airflow 2>/dev/null | awk 'NR==2{print $10}')"
+echo "============================================="
+echo ""

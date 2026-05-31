@@ -8,9 +8,9 @@ type: application
 version: 0.1.0
 
 # Airflow application version running inside the pods.
-appVersion: "2.11.0"
+appVersion: "${AIRFLOW_VERSION}"
 
 dependencies:
   - name: airflow
-    version: "1.21.0"
+    version: "${AIRFLOW_CHART_VERSION}"
     repository: https://airflow.apache.org

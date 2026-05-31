@@ -1,2 +1,5 @@
 # Helm subchart tarballs downloaded by 'helm dependency update' — do not commit.
 helm/charts/
+
+# Chart.yaml is generated from Chart.yaml.tpl by post-create.sh — do not commit.
+helm/Chart.yaml

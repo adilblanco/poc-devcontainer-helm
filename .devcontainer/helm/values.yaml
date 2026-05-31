@@ -1,12 +1,14 @@
 # Values for the airflow-local wrapper chart.
 # All keys are nested under 'airflow:' because they configure the
 # apache-airflow subchart declared in Chart.yaml.
+#
+# AIRFLOW_VERSION and CUSTOM_IMAGE_TAG are NOT hardcoded here — they are
+# injected at deploy time via --set flags in post-create.sh, sourced from
+# config.env. This file only contains values that do not change between
+# Airflow versions.
 
 airflow:
-  airflowVersion: "2.11.0"
-
-  defaultAirflowRepository: airflow-custom
-  defaultAirflowTag: "1.0.0"
+  defaultAirflowRepository: bi-airflow-custom-img
 
   # Never pull from registry — use the image loaded locally via 'kind load docker-image'.
   images:
