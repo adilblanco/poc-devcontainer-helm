@@ -79,6 +79,13 @@ echo "    Image ready in cluster."
 echo "==> Creating namespace airflow..."
 kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -
 
+# Apply PersistentVolume and PersistentVolumeClaim manifests for DAGs and plugins.
+# The PVs use hostPath pointing to /mnt/airflow-{dags,plugins} inside the Kind node,
+# which are bind-mounted from the DevContainer workspace via extraMounts in kind-config.yaml.
+echo "==> Applying DAG and plugin storage manifests..."
+kubectl apply -f "${WORKSPACE_DIR}/.devcontainer/k8s/dags-pv.yaml"
+kubectl apply -f "${WORKSPACE_DIR}/.devcontainer/k8s/plugins-pv.yaml"
+
 # Create the webserver secret — required by Airflow to secure its web sessions.
 echo "==> Creating webserver secret..."
 kubectl create secret generic airflow-webserver-config \

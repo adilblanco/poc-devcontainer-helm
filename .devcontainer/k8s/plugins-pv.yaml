@@ -1,0 +1,31 @@
+# PersistentVolume backed by /mnt/airflow-plugins inside the Kind node.
+# That path is bind-mounted from the DevContainer's plugins/ directory
+# via extraMounts in kind-config.yaml.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: airflow-plugins-pv
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  hostPath:
+    path: /mnt/airflow-plugins
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-plugins-pvc
+  namespace: airflow
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: ""
+  volumeName: airflow-plugins-pv

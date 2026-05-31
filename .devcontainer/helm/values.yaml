@@ -13,8 +13,48 @@ images:
 
 executor: LocalExecutor
 
+# Mirrors the ENV PYTHONPATH previously set in the Dockerfile.
+# Required so that 'from plugins.operators...' resolves in all Airflow pods.
+extraEnv: |
+  - name: PYTHONPATH
+    value: '/opt/airflow'
+
 # Webserver secret created in post-create.sh
 webserverSecretKeySecretName: airflow-webserver-config
+
+# Bundled PostgreSQL — sufficient for local dev
+postgresql:
+  enabled: true
+
+# =============================================================================
+# Live filesystem sync — dags/ and plugins/
+#
+# Both directories are bind-mounted from the DevContainer into the Kind node
+# via extraMounts in kind-config.yaml, then exposed to pods via hostPath PVs
+# (k8s/dags-pv.yaml and k8s/plugins-pv.yaml).
+#
+# Why two different mounting strategies:
+#   dags/    → chart-native dags.persistence — automatically mounts airflow-dags-pvc
+#              at /opt/airflow/dags on scheduler, webserver and triggerer.
+#   plugins/ → no equivalent chart feature, so airflow-plugins-pvc is declared
+#              via extraVolumes/extraVolumeMounts on each component individually.
+# =============================================================================
+
+dags:
+  gitSync:
+    enabled: false
+  persistence:
+    enabled: true
+    existingClaim: airflow-dags-pvc
+
+scheduler:
+  extraVolumes:
+    - name: airflow-plugins
+      persistentVolumeClaim:
+        claimName: airflow-plugins-pvc
+  extraVolumeMounts:
+    - name: airflow-plugins
+      mountPath: /opt/airflow/plugins
 
 webserver:
   # Expose via NodePort so Kind can route host:8080 → node:31080.
@@ -33,14 +73,22 @@ webserver:
     firstName: Admin
     lastName: User
     password: admin
+  extraVolumes:
+    - name: airflow-plugins
+      persistentVolumeClaim:
+        claimName: airflow-plugins-pvc
+  extraVolumeMounts:
+    - name: airflow-plugins
+      mountPath: /opt/airflow/plugins
 
-# Bundled PostgreSQL — sufficient for local dev
-postgresql:
-  enabled: true
-
-dags:
-  gitSync:
-    enabled: false
+triggerer:
+  extraVolumes:
+    - name: airflow-plugins
+      persistentVolumeClaim:
+        claimName: airflow-plugins-pvc
+  extraVolumeMounts:
+    - name: airflow-plugins
+      mountPath: /opt/airflow/plugins
 
 config:
   core:

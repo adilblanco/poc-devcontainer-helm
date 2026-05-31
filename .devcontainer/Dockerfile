@@ -6,9 +6,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy DAGs and plugins into the image.
 # Note: requires a Rebuild Container to pick up changes.
-COPY --chown=airflow:root dags/ /opt/airflow/dags/
-COPY --chown=airflow:root plugins/ /opt/airflow/plugins/
+# COPY --chown=airflow:root dags/ /opt/airflow/dags/
+# COPY --chown=airflow:root plugins/ /opt/airflow/plugins/
 
-# Makes 'from plugins.operators...' resolvable — mirrors the production setup
-# where PYTHONPATH points to the project root (gitSync uses /opt/airflow/dags/repo).
-ENV PYTHONPATH=/opt/airflow
+# DAGs and plugins are no longer embedded in the image — they are served
+# from Kubernetes PersistentVolumes backed by the local dags/ and plugins/
+# directories. Edits are picked up automatically without rebuilding.
+# ENV PYTHONPATH=/opt/airflow

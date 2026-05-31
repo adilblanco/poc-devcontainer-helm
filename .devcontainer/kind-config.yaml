@@ -8,3 +8,12 @@ nodes:
       - containerPort: 31080
         hostPort: 8080
         protocol: TCP
+    extraMounts:
+      # Bind-mount local dags/ and plugins/ into the Kind node so that
+      # hostPath PersistentVolumes can expose them to Airflow pods.
+      # hostPath = path on the DevContainer (Docker host for DinD).
+      # containerPath = path inside the Kind node container.
+      - hostPath: /workspaces/poc-devcontainer-helm/dags
+        containerPath: /mnt/airflow-dags
+      - hostPath: /workspaces/poc-devcontainer-helm/plugins
+        containerPath: /mnt/airflow-plugins
