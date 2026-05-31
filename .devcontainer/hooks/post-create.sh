@@ -93,14 +93,20 @@ kubectl create secret generic airflow-webserver-config \
   --namespace airflow \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# Add the official Apache Airflow Helm repository.
+# Add the official Apache Airflow Helm repository so that 'helm dependency update'
+# can resolve the apache-airflow/airflow dependency declared in Chart.yaml.
 echo "==> Adding Apache Airflow Helm repo..."
 helm repo add apache-airflow https://airflow.apache.org 2>/dev/null || true
 helm repo update
 
-# Deploy Airflow using the Helm chart with our custom values.
+# Download the pinned subchart (airflow-1.21.0.tgz) into helm/charts/.
+# This is equivalent to 'npm install' — it reads Chart.yaml and writes Chart.lock.
+echo "==> Resolving Helm chart dependencies..."
+helm dependency update "${WORKSPACE_DIR}/.devcontainer/helm"
+
+# Deploy using the local wrapper chart (not directly from the remote repo).
+# values.yaml is picked up automatically from the chart directory.
 echo "==> Deploying Airflow via Helm..."
-helm upgrade --install airflow apache-airflow/airflow \
+helm upgrade --install airflow "${WORKSPACE_DIR}/.devcontainer/helm" \
   --namespace airflow \
-  --values "${WORKSPACE_DIR}/.devcontainer/helm/values.yaml" \
   --timeout 10m && echo "✓ Airflow deployed. UI: http://localhost:8080 (admin / admin)"

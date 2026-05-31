@@ -1,0 +1,2 @@
+# Helm subchart tarballs downloaded by 'helm dependency update' — do not commit.
+helm/charts/

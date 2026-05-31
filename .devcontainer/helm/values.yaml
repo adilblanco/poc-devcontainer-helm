@@ -1,97 +1,99 @@
-# Airflow Helm chart values — local Kind development
-# Chart: apache-airflow/airflow
+# Values for the airflow-local wrapper chart.
+# All keys are nested under 'airflow:' because they configure the
+# apache-airflow subchart declared in Chart.yaml.
 
-airflowVersion: "2.11.0"
+airflow:
+  airflowVersion: "2.11.0"
 
-defaultAirflowRepository: airflow-custom
-defaultAirflowTag: "1.0.0"
+  defaultAirflowRepository: airflow-custom
+  defaultAirflowTag: "1.0.0"
 
-# Never pull from registry — use the image loaded locally via 'kind load docker-image'.
-images:
-  airflow:
-    pullPolicy: Never
+  # Never pull from registry — use the image loaded locally via 'kind load docker-image'.
+  images:
+    airflow:
+      pullPolicy: Never
 
-executor: LocalExecutor
+  executor: LocalExecutor
 
-# Mirrors the ENV PYTHONPATH previously set in the Dockerfile.
-# Required so that 'from plugins.operators...' resolves in all Airflow pods.
-extraEnv: |
-  - name: PYTHONPATH
-    value: '/opt/airflow'
+  # Mirrors the ENV PYTHONPATH previously set in the Dockerfile.
+  # Required so that 'from plugins.operators...' resolves in all Airflow pods.
+  extraEnv: |
+    - name: PYTHONPATH
+      value: '/opt/airflow'
 
-# Webserver secret created in post-create.sh
-webserverSecretKeySecretName: airflow-webserver-config
+  # Webserver secret created in post-create.sh
+  webserverSecretKeySecretName: airflow-webserver-config
 
-# Bundled PostgreSQL — sufficient for local dev
-postgresql:
-  enabled: true
-
-# =============================================================================
-# Live filesystem sync — dags/ and plugins/
-#
-# Both directories are bind-mounted from the DevContainer into the Kind node
-# via extraMounts in kind-config.yaml, then exposed to pods via hostPath PVs
-# (k8s/dags-pv.yaml and k8s/plugins-pv.yaml).
-#
-# Why two different mounting strategies:
-#   dags/    → chart-native dags.persistence — automatically mounts airflow-dags-pvc
-#              at /opt/airflow/dags on scheduler, webserver and triggerer.
-#   plugins/ → no equivalent chart feature, so airflow-plugins-pvc is declared
-#              via extraVolumes/extraVolumeMounts on each component individually.
-# =============================================================================
-
-dags:
-  gitSync:
-    enabled: false
-  persistence:
+  # Bundled PostgreSQL — sufficient for local dev
+  postgresql:
     enabled: true
-    existingClaim: airflow-dags-pvc
 
-scheduler:
-  extraVolumes:
-    - name: airflow-plugins
-      persistentVolumeClaim:
-        claimName: airflow-plugins-pvc
-  extraVolumeMounts:
-    - name: airflow-plugins
-      mountPath: /opt/airflow/plugins
+  # =============================================================================
+  # Live filesystem sync — dags/ and plugins/
+  #
+  # Both directories are bind-mounted from the DevContainer into the Kind node
+  # via extraMounts in kind-config.yaml, then exposed to pods via hostPath PVs
+  # (.devcontainer/k8s/dags-pv.yaml and plugins-pv.yaml).
+  #
+  # Why two different mounting strategies:
+  #   dags/    → chart-native dags.persistence — automatically mounts airflow-dags-pvc
+  #              at /opt/airflow/dags on scheduler, webserver and triggerer.
+  #   plugins/ → no equivalent chart feature, so airflow-plugins-pvc is declared
+  #              via extraVolumes/extraVolumeMounts on each component individually.
+  # =============================================================================
 
-webserver:
-  # Expose via NodePort so Kind can route host:8080 → node:31080.
-  service:
-    type: NodePort
-    ports:
-      - name: airflow-ui
-        port: 8080
-        targetPort: 8080
-        nodePort: 31080
-  defaultUser:
-    enabled: true
-    role: Admin
-    username: admin
-    email: admin@admin.com
-    firstName: Admin
-    lastName: User
-    password: admin
-  extraVolumes:
-    - name: airflow-plugins
-      persistentVolumeClaim:
-        claimName: airflow-plugins-pvc
-  extraVolumeMounts:
-    - name: airflow-plugins
-      mountPath: /opt/airflow/plugins
+  dags:
+    gitSync:
+      enabled: false
+    persistence:
+      enabled: true
+      existingClaim: airflow-dags-pvc
 
-triggerer:
-  extraVolumes:
-    - name: airflow-plugins
-      persistentVolumeClaim:
-        claimName: airflow-plugins-pvc
-  extraVolumeMounts:
-    - name: airflow-plugins
-      mountPath: /opt/airflow/plugins
+  scheduler:
+    extraVolumes:
+      - name: airflow-plugins
+        persistentVolumeClaim:
+          claimName: airflow-plugins-pvc
+    extraVolumeMounts:
+      - name: airflow-plugins
+        mountPath: /opt/airflow/plugins
 
-config:
-  core:
-    load_examples: "False"
-  api:
-    auth_backends: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+  webserver:
+    # Expose via NodePort so Kind can route host:8080 → node:31080.
+    service:
+      type: NodePort
+      ports:
+        - name: airflow-ui
+          port: 8080
+          targetPort: 8080
+          nodePort: 31080
+    defaultUser:
+      enabled: true
+      role: Admin
+      username: admin
+      email: admin@admin.com
+      firstName: Admin
+      lastName: User
+      password: admin
+    extraVolumes:
+      - name: airflow-plugins
+        persistentVolumeClaim:
+          claimName: airflow-plugins-pvc
+    extraVolumeMounts:
+      - name: airflow-plugins
+        mountPath: /opt/airflow/plugins
+
+  triggerer:
+    extraVolumes:
+      - name: airflow-plugins
+        persistentVolumeClaim:
+          claimName: airflow-plugins-pvc
+    extraVolumeMounts:
+      - name: airflow-plugins
+        mountPath: /opt/airflow/plugins
+
+  config:
+    core:
+      load_examples: "False"
+    api:
+      auth_backends: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
