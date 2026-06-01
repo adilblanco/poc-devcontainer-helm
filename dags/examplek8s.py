@@ -1,6 +1,7 @@
 import datetime
 
 from airflow.models import DAG
+from airflow.operators.empty import EmptyOperator
 from plugins.operators.custom_kubernetes_operator import CustomKubernetesPodOperator
 
 
@@ -14,17 +15,25 @@ args = {
 
 
 with DAG(
-    dag_id='example_dag_k8s', 
+    dag_id='example_dag_k8s',
     default_args=args,
     schedule_interval=None,
     catchup=False,
     tags=['k8s']
 ) as dag:
 
-    t1 = CustomKubernetesPodOperator(
-            dag=dag,
-            image="hello-world:1.0",
-            name='hello-world'
-        )
+    start = EmptyOperator(
+        task_id="start"
+    )
 
-    t1
+    t1 = CustomKubernetesPodOperator(
+        dag=dag,
+        image="hello-world:1.0",
+        name="hello-world",
+    )
+
+    end = EmptyOperator(
+        task_id="end"
+    )
+
+    start >> t1 >> end

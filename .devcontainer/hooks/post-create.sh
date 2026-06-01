@@ -68,6 +68,11 @@ fi
 # =============================================================================
 # Delete any stale cluster and create a fresh one.
 # 'local' is the Kind cluster name — distinct from the 'airflow' namespace deployed inside it.
+echo "==> Generating kind-config.yaml from template..."
+envsubst '${PROJECT_PATH}' \
+  < "${WORKSPACE_DIR}/.devcontainer/kind-config.yaml.tpl" \
+  > "${WORKSPACE_DIR}/.devcontainer/kind-config.yaml"
+
 echo "==> Creating Kind cluster..."
 kind delete cluster --name local 2>/dev/null || true
 kind create cluster --name local --config "${WORKSPACE_DIR}/.devcontainer/kind-config.yaml"

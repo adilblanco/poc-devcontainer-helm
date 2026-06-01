@@ -13,7 +13,8 @@ nodes:
       # hostPath PersistentVolumes can expose them to Airflow pods.
       # hostPath = path on the DevContainer (Docker host for DinD).
       # containerPath = path inside the Kind node container.
-      - hostPath: /workspaces/poc-devcontainer-helm/dags
+      # WORKSPACE_DIR is injected by envsubst in post-create.sh — no hardcoded project name.
+      - hostPath: ${PROJECT_PATH}/dags
         containerPath: /mnt/airflow-dags
-      - hostPath: /workspaces/poc-devcontainer-helm/plugins
+      - hostPath: ${PROJECT_PATH}/plugins
         containerPath: /mnt/airflow-plugins
