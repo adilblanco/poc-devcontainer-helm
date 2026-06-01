@@ -57,7 +57,7 @@ PHASE=$(kubectl get pods -n airflow -l "app.kubernetes.io/name=postgresql" \
 # ── Airflow UI ────────────────────────────────────────────────────────────────
 echo ""
 echo "── Airflow UI ───────────────────────────────"
-if curl -sf --max-time 3 http://localhost:8080/health &>/dev/null; then
+if curl -sf --max-time 3 http://localhost:8080/health >/dev/null 2>&1; then
   ok "http://localhost:8080 is reachable"
 else
   fail "http://localhost:8080 is not reachable"
