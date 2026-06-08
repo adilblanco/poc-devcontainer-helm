@@ -1,8 +1,11 @@
-# Helm subchart tarballs downloaded by 'helm dependency update' — do not commit.
-helm/charts/
-
-# Chart.yaml is generated from Chart.yaml.tpl by post-create.sh — do not commit.
-helm/Chart.yaml
-
 # kind-config.yaml is generated from kind-config.yaml.tpl by post-create.sh — do not commit.
-kind-config.yaml
+cluster/kind-config.yaml
+
+# macOS metadata files
+.DS_Store
+
+# Python bytecode cache
+__pycache__/
+
+# Local notes — not for version control
+NOTES.txt

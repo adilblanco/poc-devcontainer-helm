@@ -1,0 +1,22 @@
+mode: standalone
+
+rootUser: minioadmin
+rootPassword: minioadmin
+
+persistence:
+  enabled: false
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+
+# S3 API — internal only, Airflow and KubernetesPodOperator pods are in the same cluster.
+service:
+  type: ClusterIP
+
+# Console — exposed via NodePort 30901 on the Kind node, mapped to the host
+# through extraPortMappings in kind-config.yaml and forwarded by devcontainer.json.
+consoleService:
+  type: NodePort
+  nodePort: 30901

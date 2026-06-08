@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 #
 # status.sh — quick status check for all components.
-# Usage: bash .devcontainer/hooks/status.sh
+# Usage: bash .devcontainer/tools/status.sh
 #
+
+# CLUSTER_NAME and other identity live in config.env (single source of truth).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../config.env"
 
 ok()   { echo "  [OK]   $1"; }
 fail() { echo "  [FAIL] $1"; }
@@ -17,10 +21,10 @@ echo "============================================="
 # ── Kind cluster ──────────────────────────────────────────────────────────────
 echo ""
 echo "── Kind cluster ─────────────────────────────"
-if kind get clusters 2>/dev/null | grep -q "local"; then
-  ok "Kind cluster 'local' is running"
+if kind get clusters 2>/dev/null | grep -qx "${CLUSTER_NAME}"; then
+  ok "Kind cluster '${CLUSTER_NAME}' is running"
 else
-  fail "Kind cluster 'local' not found"
+  fail "Kind cluster '${CLUSTER_NAME}' not found"
 fi
 
 # ── Kubernetes node ───────────────────────────────────────────────────────────

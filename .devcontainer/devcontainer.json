@@ -10,10 +10,14 @@
     }
   },
 
-  "forwardPorts": [8080],
+  "forwardPorts": [8080, 9001],
   "portsAttributes": {
     "8080": {
       "label": "Airflow UI",
+      "onAutoForward": "notify"
+    },
+    "9001": {
+      "label": "MinIO Console",
       "onAutoForward": "notify"
     }
   },
